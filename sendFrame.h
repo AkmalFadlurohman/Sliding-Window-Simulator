@@ -25,6 +25,7 @@ typedef struct {
 
 /* Initialization Method */
 void initFrame(sendFrame *F);
+void BytesToFrame(sendFrame *F,char* Bytes);
 
 /* Getter Method */
 unsigned int getSeqNum(sendFrame F);
@@ -38,8 +39,7 @@ void setCheckSum(sendFrame *F,unsigned int checksum);
 
 /* Frame and Byte Conversion Method */
 char* sendFrameToByte(sendFrame *F);
-sendFrame* ByteTosendFrame(char* Byte);
-void printBytes(char* Byte);
+void printBytes(char* Bytes);
 /* Other Method */
 unsigned int checkSum(sendFrame F);
 

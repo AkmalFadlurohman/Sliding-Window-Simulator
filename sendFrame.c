@@ -14,6 +14,17 @@ void initFrame(sendFrame *F) {
     F->STX = 0x2;
     F->ETX = 0x3;
 }
+void BytesToFrame(sendFrame *F,char* Bytes) {
+    F->SOH = Bytes[0];
+    unsigned char seqNumBuffer[4];
+    seqNumBuffer[0] = Bytes[1];
+    seqNumBuffer[1] = Bytes[2];
+    seqNumBuffer[2] = Bytes[3];
+    seqNumBuffer[3] = Bytes[4];
+    unsigned int seqNum;
+    memcpy(&seqNum, seqNumBuffer, sizeof(seqNum));
+    printf("%u\n",seqNum);
+}
 
 /* Getter Method */
 unsigned int getSeqNum(sendFrame F) {
@@ -55,10 +66,9 @@ char* sendFrameToByte(sendFrame *F) {
     Bytes[8] = checksum & 0xFF;
     return Bytes;
 }
-sendFrame* ByteTosendFrame(char* Byte);
-void printBytes(char* buffer) {
+void printBytes(char* Bytes) {
     for(int i = 0; i < sendFrame_size; i++) {
-        printf("%02hhX ", buffer[i]);
+        printf("%02hhX ", Bytes[i]);
     }
     printf("\n");
 }
