@@ -1,15 +1,17 @@
 CC = gcc
-CFLAGS  = -c -Wall
+CFLAGS  = -c
 
+sendfile: sendFile.o sender.o sendFrame.o
+	$(CC) -o sendfile sendFile.o sender.o sendFrame.o 
 
-sendfile: sender.o sendPacket.o
-	$(CC) -o sendfile sender.o sendPacket.o 
+sendFile.o: sendFile.c
+	$(CC) $(CFLAGS) sendFile.c
 
 sender.o: sender.c
 	$(CC) $(CFLAGS) sender.c
 
-sendPacket.o: sendPacket.c
-	$(CC) $(CFLAGS) sendPacket.c
+sendFrame.o: sendFrame.c
+	$(CC) $(CFLAGS) sendFrame.c
 
 clean:
-	rm -rf *o SlidingWindow a.out
+	rm -f *.o sendfile
