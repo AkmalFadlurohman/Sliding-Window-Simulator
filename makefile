@@ -14,4 +14,6 @@ sendFrame.o: sendFrame.c
 	$(CC) $(CFLAGS) sendFrame.c
 
 clean:
-	rm -f *.o sendfile
+	rm -f *.o
+
+.PHONY: clean

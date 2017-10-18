@@ -16,25 +16,49 @@ void initSender(Sender *S,int SWS,int sendBufferSize) {
     S->seqNum = 0;
     S->LAR = -1;
     S->LFS = -1;
-    S->sendBuffer = (char**) calloc((sendBufferSize/sizeof(char*)),sizeof(char*));
+    int Size = sizeof(char*);
+    S->sendBuffer = malloc(sendBufferSize*Size);
     for (int i=0;i<sendBufferSize;i++) {
-        S->sendBuffer[i] = (char *) malloc(sendFrame_size);
+        S->sendBuffer[i] = malloc(sendFrame_size*sizeof(char));
     }
 }
 
-void fillSendFrameBuffer(sendFrame* sendFrameBuffer,char* msgBuffer,int msgLength) {
-    for (int i=0;i<msgLength;i++) {
-        initFrame(&sendFrameBuffer[i]);
-        setSeqNum(&sendFrameBuffer[i],i);
-        setData(&sendFrameBuffer[i],msgBuffer[i]);
-        setCheckSum(&sendFrameBuffer[i],checkSum(sendFrameBuffer[i]));
+void fillFrameBuffer(sendFrame* frameBuffer,char* msgBuffer,int *currentFrameBuffer,int msgLength) {
+    *currentFrameBuffer = msgLength;
+    for (int i=0;i<*currentFrameBuffer;i++) {
+        initFrame(&frameBuffer[i]);
+        setSeqNum(&frameBuffer[i],i);
+        setData(&frameBuffer[i],msgBuffer[i]);
+        setCheckSum(&frameBuffer[i],checkSum(frameBuffer[i]));
     }
 }
 
-void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int currentSendBuffer) {
-    for (int i=0;i<currentSendBuffer;i++) {
+void deleteFromFrameBuffer(sendFrame* frameBuffer,int first, int last,int *currentFrameBuffer) {
+    for (int i=first;i<=last;i++) {
+        frameBuffer[i] = frameBuffer[last+i];
+    }
+    *currentFrameBuffer = *currentFrameBuffer - (last-first);
+}
+
+void fillSendBuffer(Sender *S,sendFrame* frameBuffer,int *currentFrameBuffer,int *currentSendBuffer,int *msgLength) {
+    if (*msgLength <= (S->sendBufferSize)) {
+        *currentSendBuffer = *msgLength;
+    } else {
+        *currentSendBuffer = S->sendBufferSize;
+    }
+    for (int i=0;i<*currentSendBuffer;i++) {
         for (int j=0;j<sendFrame_size;j++) {
-            S->sendBuffer[i][j] = sendFrameToByte(&sendFrameBuffer[i])[j];
+            S->sendBuffer[i][j] = sendFrameToByte(&frameBuffer[i])[j];
         }
     }
+    //deleteFromFrameBuffer(frameBuffer,0,*currentSendBuffer,currentFrameBuffer);
 }
+void deleteFromSendBuffer(Sender *S,int first, int last,int* currentSendBuffer) {
+    for (int i=first;i<=last;i++) {
+        for (int j=0;j<sendFrame_size;j++) {
+            S->sendBuffer[i][j] = S->sendBuffer[last+i][j];
+        }
+    }
+    *currentSendBuffer = *currentSendBuffer - (last-first);
+}
+
