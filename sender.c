@@ -31,8 +31,8 @@ void fillSendFrameBuffer(sendFrame* sendFrameBuffer,char* msgBuffer,int msgLengt
     }
 }
 
-void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int msgLength) {
-    for (int i=0;i<msgLength;i++) {
+void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int currentSendBuffer) {
+    for (int i=0;i<currentSendBuffer;i++) {
         for (int j=0;j<sendFrame_size;j++) {
             S->sendBuffer[i][j] = sendFrameToByte(&sendFrameBuffer[i])[j];
         }

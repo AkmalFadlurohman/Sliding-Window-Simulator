@@ -17,6 +17,6 @@ typedef struct {
 
 void initSender(Sender *S,int SWS,int sendBufferSize);
 void fillSendFrameBuffer(sendFrame* sendFrameBuffer,char* msgBuffer,int msgLength);
-void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int msgLength);
+void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int currentSendBuffer);
 
 #endif

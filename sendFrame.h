@@ -20,7 +20,7 @@ typedef struct {
     uint8_t STX;
     uint8_t data;
     uint8_t ETX;
-    unsigned int checksum;
+    uint8_t checksum;
 } sendFrame;
 
 /* Initialization Method */
@@ -30,17 +30,17 @@ void BytesToFrame(sendFrame *F,char* Bytes);
 /* Getter Method */
 unsigned int getSeqNum(sendFrame F);
 uint8_t getData(sendFrame F);
-unsigned int getChecksum(sendFrame F);
+uint8_t getChecksum(sendFrame F);
 
 /* Setter Method */
 void setSeqNum(sendFrame *F,unsigned int seqNum);
 void setData(sendFrame *F,char c);
-void setCheckSum(sendFrame *F,unsigned int checksum);
+void setCheckSum(sendFrame *F,uint8_t checksum);
 
 /* Frame and Byte Conversion Method */
 char* sendFrameToByte(sendFrame *F);
 void printBytes(char* Bytes);
 /* Other Method */
-unsigned int checkSum(sendFrame F);
+uint8_t checkSum(sendFrame F);
 
 #endif

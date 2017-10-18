@@ -24,8 +24,7 @@ void BytesToFrame(sendFrame *F,char* Bytes) {
     F->STX = Bytes[5];
     setData(F,Bytes[6]);
     F->ETX = Bytes[7];
-    unsigned int checksum = (unsigned int) Bytes[8];
-    setCheckSum(F,checksum);
+    setCheckSum(F,Bytes[8]);
 }
 
 /* Getter Method */
@@ -35,7 +34,7 @@ unsigned int getSeqNum(sendFrame F) {
 uint8_t getData(sendFrame F) {
     return F.data;
 }
-unsigned int getChecksum(sendFrame F) {
+uint8_t getChecksum(sendFrame F) {
     return F.checksum;
 }
 
@@ -48,7 +47,7 @@ void setData(sendFrame *F,char data) {
     F->data = (uint8_t) data;
 }
 
-void setCheckSum(sendFrame *F,unsigned int checksum) {
+void setCheckSum(sendFrame *F,uint8_t checksum) {
     F->checksum = checksum;
 }
 
@@ -64,8 +63,7 @@ char* sendFrameToByte(sendFrame *F) {
     Bytes[5] = F->STX;
     Bytes[6] = F->data;
     Bytes[7] = F->ETX;
-    unsigned int checksum = F->checksum;
-    Bytes[8] = checksum & 0xFF;
+    Bytes[8] = F->checksum;
     return Bytes;
 }
 void printBytes(char* Bytes) {
@@ -76,8 +74,8 @@ void printBytes(char* Bytes) {
 }
 
 /* Other Method */
-unsigned int checkSum(sendFrame F) {
-    return ((F.SOH)+F.seqNum+(F.STX)+(F.data)+(F.ETX));
+uint8_t checkSum(sendFrame F) {
+    return (uint8_t) ((F.SOH)+F.seqNum+(F.STX)+(F.data)+(F.ETX));
 }
 
 
