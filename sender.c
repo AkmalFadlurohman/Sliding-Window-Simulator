@@ -7,21 +7,34 @@
 //
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <string.h>
 #include "sender.h"
 
 void initSender(Sender *S,int SWS,int sendBufferSize) {
     S->SWS = SWS;
+    S->sendBufferSize = sendBufferSize;
     S->seqNum = 0;
     S->LAR = -1;
     S->LFS = -1;
-    //int size = sendBufferSize;
-    S->sendBuffer = (sendFrame*) calloc((sendBufferSize/sizeof(sendFrame)),sizeof(sendFrame));
+    S->sendBuffer = (char**) calloc((sendBufferSize/sizeof(char*)),sizeof(char*));
+    for (int i=0;i<sendBufferSize;i++) {
+        S->sendBuffer[i] = (char *) malloc(sendFrame_size);
+    }
 }
-void fillSendBuffer(Sender *S,char* msgBuffer,int msgLength) {
+
+void fillSendFrameBuffer(sendFrame* sendFrameBuffer,char* msgBuffer,int msgLength) {
     for (int i=0;i<msgLength;i++) {
-        initFrame(&S->sendBuffer[i]);
-        setSeqNum(&S->sendBuffer[i],i);
-        setData(&S->sendBuffer[i],msgBuffer[i]);
-        setCheckSum(&S->sendBuffer[i],checkSum(S->sendBuffer[i]));
+        initFrame(&sendFrameBuffer[i]);
+        setSeqNum(&sendFrameBuffer[i],i);
+        setData(&sendFrameBuffer[i],msgBuffer[i]);
+        setCheckSum(&sendFrameBuffer[i],checkSum(sendFrameBuffer[i]));
+    }
+}
+
+void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int msgLength) {
+    for (int i=0;i<msgLength;i++) {
+        for (int j=0;j<sendFrame_size;j++) {
+            S->sendBuffer[i][j] = sendFrameToByte(&sendFrameBuffer[i])[j];
+        }
     }
 }

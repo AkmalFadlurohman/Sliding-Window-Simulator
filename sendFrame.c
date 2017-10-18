@@ -16,14 +16,16 @@ void initFrame(sendFrame *F) {
 }
 void BytesToFrame(sendFrame *F,char* Bytes) {
     F->SOH = Bytes[0];
-    unsigned char seqNumBuffer[4];
-    seqNumBuffer[0] = Bytes[1];
-    seqNumBuffer[1] = Bytes[2];
-    seqNumBuffer[2] = Bytes[3];
-    seqNumBuffer[3] = Bytes[4];
-    unsigned int seqNum;
-    memcpy(&seqNum, seqNumBuffer, sizeof(seqNum));
-    printf("%u\n",seqNum);
+    unsigned int seqNum = (unsigned int) ((unsigned char)(Bytes[1] << 24) |
+                              (unsigned char)(Bytes[2] << 16) |
+                              (unsigned char)(Bytes[3] << 8) |
+                              (unsigned char)(Bytes[4]));
+    setSeqNum(F,seqNum);
+    F->STX = Bytes[5];
+    setData(F,Bytes[6]);
+    F->ETX = Bytes[7];
+    unsigned int checksum = (unsigned int) Bytes[8];
+    setCheckSum(F,checksum);
 }
 
 /* Getter Method */

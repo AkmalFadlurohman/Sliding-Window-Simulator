@@ -8,13 +8,15 @@
 
 typedef struct {
     int SWS;
+    int sendBufferSize;
     unsigned char seqNum;
     unsigned int LAR;
     unsigned char LFS;
-    sendFrame *sendBuffer;
+    char** sendBuffer;
 } Sender;
 
 void initSender(Sender *S,int SWS,int sendBufferSize);
-void fillSendBuffer(Sender *S,char* msgBuffer,int msgLength);
+void fillSendFrameBuffer(sendFrame* sendFrameBuffer,char* msgBuffer,int msgLength);
+void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int msgLength);
 
 #endif
