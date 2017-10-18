@@ -25,11 +25,13 @@ int strToInt(char* str) {
     }
     return numb;
 }
-void deleteFromSendBuffer(Sender S,int first, int last,int* currentSendBuffer) {
+void deleteFromSendBuffer(Sender *S,int first, int last,int* currentSendBuffer) {
     for (int i=first;i<=last;i++) {
-        strcpy(S.sendBuffer[i],S.sendBuffer[last+i]);
+        for (int j=0;j<sendFrame_size;j++) {
+            S->sendBuffer[i][j] = S->sendBuffer[last+i][j];
+        }
     }
-    *currentSendBuffer = *currentSendBuffer - (last-first+1);
+    *currentSendBuffer = *currentSendBuffer - (last-first);
 }
 
 int main(int argc, char* argv[]) {
@@ -78,14 +80,26 @@ int main(int argc, char* argv[]) {
         free(msgBuffer);
         
         struct sockaddr_in receiverAddr;
-        int udpSocket = socket(PF_INET,SOCK_DGRAM,0);
         
         receiverAddr.sin_family = AF_INET;
         receiverAddr.sin_port = htons(port);
         receiverAddr.sin_addr.s_addr = inet_addr(destIP);
         memset(receiverAddr.sin_zero, '\0', sizeof receiverAddr.sin_zero);
+        int udpSocket = socket(PF_INET,SOCK_DGRAM,0);
         
+        for (int i=0;i<currentSendBuffer;i++) {
+            /*printf("SOH: %#x |",sendFrameBuffer[i].SOH);
+            printf("seqNum: %d %#x |",sendFrameBuffer[i].seqNum,sendFrameBuffer[i].seqNum);
+            printf("STX: %#x |",sendFrameBuffer[i].STX);
+            printf("Data: %c %#x |",sendFrameBuffer[i].data,sendFrameBuffer[i].data);
+            printf("ETX: %#x|",sendFrameBuffer[i].ETX);
+            printf("Checksum: %#x|\n",sendFrameBuffer[i].checksum);*/
+            printBytes(S.sendBuffer[i]);
+        }
+        printf("\n");
         
+        int frameSent = 0;
+        int ackReceived = 0;
         while(1) {
             if (currentSendBuffer == 0) {
                 break;
@@ -93,15 +107,20 @@ int main(int argc, char* argv[]) {
                 for (int i=0;i<currentSendBuffer;i++) {
                     sendto(udpSocket,S.sendBuffer[i],9,0,(struct sockaddr *)&receiverAddr,sizeof(receiverAddr));
                 }
-                deleteFromSendBuffer(S,0,currentSendBuffer,&currentSendBuffer);
+                deleteFromSendBuffer(&S,0,currentSendBuffer,&currentSendBuffer);
+                break;
             } else {
                 for (int i=0;i<S.SWS;i++) {
-                    sendto(udpSocket,S.sendBuffer[i],9,0,(struct sockaddr *)&receiverAddr,sizeof(receiverAddr));
+                    int sent = sendto(udpSocket,S.sendBuffer[i],9,0,(struct sockaddr *)&receiverAddr,sizeof(receiverAddr));
+                    frameSent += sent;
                 }
-                deleteFromSendBuffer(S,0,S.SWS,&currentSendBuffer);
-                break;
+                deleteFromSendBuffer(&S,0,S.SWS-1,&currentSendBuffer);
+                for (int i=0;i<currentSendBuffer;i++) {
+                    printBytes(S.sendBuffer[i]);
+                }
             }
         }
+        printf("%d\n",frameSent);
         int socketStats = shutdown(udpSocket,2);
         free(S.sendBuffer);
         
