@@ -16,7 +16,9 @@ typedef struct {
 } Sender;
 
 void initSender(Sender *S,int SWS,int sendBufferSize);
-void fillSendFrameBuffer(sendFrame* sendFrameBuffer,char* msgBuffer,int msgLength);
-void fillSendBuffer(Sender *S,sendFrame* sendFrameBuffer,int currentSendBuffer);
+void fillFrameBuffer(sendFrame* frameBuffer,char* msgBuffer,int *currentFrameBuffer,int msgLength);
+void deleteFromFrameBuffer(sendFrame* frameBuffer,int first, int last,int *currentFrameBuffer);
+void fillSendBuffer(Sender *S,sendFrame* frameBuffer,int *currentFrameBuffer,int *currentSendBuffer,int *msgLength);
+void deleteFromSendBuffer(Sender *S,int first, int last,int* currentSendBuffer);
 
 #endif
