@@ -31,7 +31,7 @@ void createACK(sendFrame F,Packet_ACK* A) {
     setACK(A);
     setNextSeqNum(A, F.seqNum + 1);
     setAws(A,0x1);
-    setAckChecksum(A,calculateChecksum(A));
+    setAckChecksum(A,calculateChecksum(*A));
 }
 
 void die(char *s)
@@ -74,6 +74,7 @@ int main(int argc, char *argv[]){
         BytesToFrame(&F,msg);
         Packet_ACK A;
         createACK(F,&A);
+        int sent;
         if ((sent = sendto(receiverSocket,ackToByte(&A), 7, 0 , (struct sockaddr *) &senderAddr, sizeof(senderAddr)))==-1)
         {
             die("sendto()");

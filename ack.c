@@ -46,7 +46,7 @@ uint8_t calculateChecksum(Packet_ACK packet){
 }
 
 char* ackToByte(Packet_ACK *A) {
-    char* Bytes = (char *) malloc(sendFrame_size);
+    char* Bytes = (char *) malloc(Ack_size*sizeof(char));
     Bytes[0] = A->ack;
     unsigned int seqNum = A->nextSeqNum;
     Bytes[1] = (seqNum >> 24) & 0xFF;

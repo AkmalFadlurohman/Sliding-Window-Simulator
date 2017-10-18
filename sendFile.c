@@ -149,6 +149,7 @@ int main(int argc, char* argv[]) {
                 }
                 int received;
                 socklen_t len = sizeof receiverAddr;
+                char *msg = malloc(Ack_size*sizeof(char));
                 for (int i=0;0<S.SWS;i++) {
                     if ((received = recvfrom(senderSocket, msg, 7, 0, (struct sockaddr *) &receiverAddr,&len)) == -1)
                     {

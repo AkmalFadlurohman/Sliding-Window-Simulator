@@ -3,8 +3,8 @@ CFLAGS  = -c
 
 all: sendfile receivefile
 
-sendfile: sendFile.o sender.o sendFrame.o
-	$(CC) -o sendfile sendFile.o sender.o sendFrame.o 
+sendfile: sendFile.o sender.o sendFrame.o ack.o
+	$(CC) -o sendfile sendFile.o sender.o sendFrame.o ack.o
 
 receivefile: rcv.o ack.o sendFrame.o
 	$(CC) -o receivefile rcv.o ack.o sendFrame.o 
@@ -16,7 +16,7 @@ sendFile.o: sendFile.c
 sender.o: sender.c
 	$(CC) $(CFLAGS) sender.c
 
-sendFrame1.o: sendFrame.c
+sendFrame.o: sendFrame.c
 	$(CC) $(CFLAGS) sendFrame.c
 
 rcv.o: rcv.c
