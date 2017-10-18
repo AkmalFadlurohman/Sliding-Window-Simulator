@@ -14,6 +14,10 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include "sender.h"
+#include "ack.h"
+
+/* Global */
+struct sockaddr_in senderAddr,receiverAddr;
 
 void printFrameBuffer(sendFrame* frameBuffer,int currentFrameBuffer) {
     for (int i=0;i<currentFrameBuffer;i++) {
@@ -40,6 +44,11 @@ int strToInt(char* str) {
         numb = temp + (str[i] - '0');
     }
     return numb;
+}
+void die(char *s)
+{
+    perror(s);
+    exit(1);
 }
 
 int main(int argc, char* argv[]) {
@@ -81,49 +90,80 @@ int main(int argc, char* argv[]) {
         int currentFrameBuffer;
         sendFrame* frameBuffer =  (sendFrame*) calloc((sendBufferSize/sizeof(sendFrame)),sizeof(sendFrame));
         fillFrameBuffer(frameBuffer,msgBuffer,&currentFrameBuffer,msgLength);
-        printf("CurrentFrameBuffer:%d\n",currentFrameBuffer);
     
         initSender(&S,SWS,sendBufferSize);
         
         int currentSendBuffer;
         fillSendBuffer(&S,frameBuffer,&currentFrameBuffer,&currentSendBuffer,&msgLength);
-        printf("CurrentSendBuffer: %d\n",currentSendBuffer);
         
-        printFrameBuffer(frameBuffer,currentFrameBuffer);
-        printSendBuffer(S,currentSendBuffer);
+        int senderSocket;
+        if ((senderSocket = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP)) == -1)
+        {
+            die("socket");
+        }
         
-        struct sockaddr_in receiverAddr;
-        
+        memset((char *) &receiverAddr, 0, sizeof(receiverAddr));
         receiverAddr.sin_family = AF_INET;
         receiverAddr.sin_port = htons(port);
-        receiverAddr.sin_addr.s_addr = inet_addr(destIP);
-        memset(receiverAddr.sin_zero, '\0', sizeof receiverAddr.sin_zero);
-        int udpSocket = socket(PF_INET,SOCK_DGRAM,0);
         
+        if (inet_aton(destIP , &receiverAddr.sin_addr) == 0)
+        {
+            fprintf(stderr, "inet_aton() failed\n");
+            exit(1);
+        }
+        
+        if( bind(senderSocket , (struct sockaddr*)&receiverAddr, sizeof(receiverAddr) ) == -1)
+        {
+            die("bind");
+        }
         int frameSent = 0;
         int ackReceived = 0;
-        /*while(1) {
+        while(1) {
             if (currentSendBuffer == 0) {
                 break;
             } else if (currentSendBuffer < S.SWS) {
+                int sent;
                 for (int i=0;i<currentSendBuffer;i++) {
-                    int sent = sendto(udpSocket,S.sendBuffer[i],9,0,(struct sockaddr *)&receiverAddr,sizeof(receiverAddr));
+                    if ((sent = sendto(senderSocket, S.sendBuffer[i], 9, 0 , (struct sockaddr *) &receiverAddr, sizeof(receiverAddr)))==-1)
+                    {
+                        die("sendto()");
+                    }
+                    sendFrame F;
+                    BytesToFrame(&F,S.sendBuffer[i]);
+                    S.LFS = getSeqNum(F);
                     frameSent += sent;
                 }
                 //deleteFromSendBuffer(&S,0,currentSendBuffer,&currentSendBuffer);
-                //printf("%d\n",currentSendBuffer);
                 break;
             } else {
+                int sent;
                 for (int i=0;i<S.SWS;i++) {
-                    int sent = sendto(udpSocket,S.sendBuffer[i],9,0,(struct sockaddr *)&receiverAddr,sizeof(receiverAddr));
+                    if ((sent = sendto(senderSocket, S.sendBuffer[i], 9, 0 , (struct sockaddr *) &receiverAddr, sizeof(receiverAddr)))==-1)
+                    {
+                        die("sendto()");
+                    }
+                    sendFrame F;
+                    BytesToFrame(&F,S.sendBuffer[i]);
+                    S.LFS = getSeqNum(F);
                     frameSent += sent;
                 }
-                //deleteFromSendBuffer(&S,0,S.SWS-1,&currentSendBuffer);
+                int received;
+                socklen_t len = sizeof receiverAddr;
+                for (int i=0;0<S.SWS;i++) {
+                    if ((received = recvfrom(senderSocket, msg, 7, 0, (struct sockaddr *) &receiverAddr,&len)) == -1)
+                    {
+                        die("recvfrom()");
+                    }
+                    Packet_ACK A;
+                    BytesToAck(&A,msg);
+                    printf("%d\n",getNextSeqNum(A));
+                    ackReceived += received;
+                }
+                deleteFromSendBuffer(&S,0,S.SWS-1,&currentSendBuffer);
             }
-        }*/
-        int socketStats = shutdown(udpSocket,2);
-        //free(S.sendBuffer);
-        //free(msgBuffer);
+        }
+        int socketStats = shutdown(senderSocket,2);
+
         return 0;
     }
 }
