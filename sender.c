@@ -16,8 +16,7 @@ void initSender(Sender *S,int SWS,int sendBufferSize) {
     S->seqNum = 0;
     S->LAR = -1;
     S->LFS = -1;
-    int Size = sizeof(char*);
-    S->sendBuffer = malloc(sendBufferSize*Size);
+    S->sendBuffer = malloc(sendBufferSize*sizeof(char*));
     for (int i=0;i<sendBufferSize;i++) {
         S->sendBuffer[i] = malloc(sendFrame_size*sizeof(char));
     }
