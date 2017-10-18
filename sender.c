@@ -50,8 +50,8 @@ void fillSendBuffer(Sender *S,sendFrame* frameBuffer,int *currentFrameBuffer,int
             S->sendBuffer[i][j] = sendFrameToByte(&frameBuffer[i])[j];
         }
     }
-    //deleteFromFrameBuffer(frameBuffer,0,*currentSendBuffer,currentFrameBuffer);
 }
+
 void deleteFromSendBuffer(Sender *S,int first, int last,int* currentSendBuffer) {
     for (int i=first;i<=last;i++) {
         for (int j=0;j<sendFrame_size;j++) {
@@ -60,4 +60,3 @@ void deleteFromSendBuffer(Sender *S,int first, int last,int* currentSendBuffer) 
     }
     *currentSendBuffer = *currentSendBuffer - (last-first);
 }
-
